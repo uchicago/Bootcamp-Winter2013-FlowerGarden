@@ -86,4 +86,40 @@
         [gestureRecognizer setTranslation:CGPointZero inView:[piece superview]];
     }
 }
+
+#pragma mark - Shake Event Detection
+/*******************************************************************************
+ * @method      canBecomeFirstResponder
+ * @abstract    To receive motion events, the responder object that is to handle them must be the first responder.
+ * @description
+ *******************************************************************************/
+- (BOOL)canBecomeFirstResponder
+{
+    return YES;
+}
+
+/*******************************************************************************
+ * @method          motionEnded:withEvent
+ * @abstract
+ * @description
+ ******************************************************************************/
+- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event {
+    
+    // Test what kind of UIEventt type is recognized
+    if (motion == UIEventTypeMotion && event.type == UIEventSubtypeMotionShake) {
+        NSLog(@">>>>> Shake detected: %@", [NSDate date]);
+        
+        // Get the field view by using its tag (alternative to setting a property for the view)
+        UIView *field = [self.view viewWithTag:100];
+
+        // Get all subviews into an array
+        NSArray *flowersOnTheField = [field subviews];
+
+        // Iterate through array and remove each flower
+        for (UIView *subview in flowersOnTheField) {
+            [subview removeFromSuperview];
+        }
+    }
+}
+
 @end
