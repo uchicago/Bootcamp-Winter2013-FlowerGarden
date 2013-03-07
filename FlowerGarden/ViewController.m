@@ -7,11 +7,15 @@
 //
 
 #import "ViewController.h"
+#import <AudioToolbox/AudioToolbox.h>
 
+// Class Extension (Private) ///////////////////////////////////////////////////
 @interface ViewController ()
-
+- (void)animateSun;
+- (void)playSoundEffect:(NSString*)soundName; 
 @end
 
+// Class ///////////////////////////////////////////////////////////////////////
 @implementation ViewController
 
 - (void)viewDidLoad
@@ -80,6 +84,10 @@
     // Enable view to receive touches and add the gesture
     flowerImageView.userInteractionEnabled = YES;
     [flowerImageView addGestureRecognizer:panGesture];
+    
+    // Play sound when adding  
+    [self playSoundEffect:@"Tink"];
+
 }
 
 
@@ -135,6 +143,9 @@
         for (UIView *subview in flowersOnTheField) {
             [subview removeFromSuperview];
         }
+
+        // Play a sound effect
+        [self playSoundEffect:@"Cartoon Boing"];
     }
 }
 
@@ -164,6 +175,22 @@
                          NSLog(@">>>> Sun has risen");
                      }
      ];
+}
+
+#pragma mark - Sound Effect
+/*******************************************************************************
+ * @method          playSoundEffect
+ * @abstract        Play a short sound when a flower is added
+ * @description     
+ ******************************************************************************/
+- (void)playSoundEffect:(NSString*)soundName
+{
+    NSLog(@">>> Play sound named: %@",soundName);
+    NSString *soundPath = [[NSBundle mainBundle] pathForResource:soundName ofType:@"caf"];
+    NSURL *soundURL = [NSURL fileURLWithPath:soundPath];
+    SystemSoundID soundID;
+    AudioServicesCreateSystemSoundID((__bridge CFURLRef)soundURL, &soundID);
+    AudioServicesPlaySystemSound(soundID);
 }
 
 @end
