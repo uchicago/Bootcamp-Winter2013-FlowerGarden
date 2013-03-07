@@ -20,6 +20,22 @@
 	// Do any additional setup after loading the view, typically from a nib.
 }
 
+/*******************************************************************************
+ * @method          viewDidAppear
+ * @abstract
+ * @description
+ *******************************************************************************/
+- (void)viewDidAppear:(BOOL)animated
+{
+    [self animateSun];
+}
+
+
+/*******************************************************************************
+ * @method          didReceiveMemoryWarning
+ * @abstract
+ * @description     
+ *******************************************************************************/
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
@@ -120,6 +136,34 @@
             [subview removeFromSuperview];
         }
     }
+}
+
+#pragma mark - Animation Effects
+/*******************************************************************************
+ * @method          animateSun
+ * @abstract        Animate the star offscreen to the top of the tree
+ * @description     Add to the tree image view
+ ******************************************************************************/
+- (void)animateSun
+{
+    // Find the field view
+    UIView *field = [self.view viewWithTag:100];
+
+    // Create offscreen image view
+    CGRect offscreen = CGRectMake(500, 500, 100, 100);
+    UIImageView *sun = [[UIImageView alloc] initWithFrame:offscreen];
+    sun.image = [UIImage imageNamed:@"sun"];
+    [field addSubview:sun];
+    
+    // Call animation to move onscreen after 2s delay
+    [UIView animateWithDuration:2.0 delay:0.25 options:UIViewAnimationOptionCurveEaseInOut
+                     animations:^{
+                         sun.center = CGPointMake(50, 50);
+                     }
+                     completion:^(BOOL  completed) {
+                         NSLog(@">>>> Sun has risen");
+                     }
+     ];
 }
 
 @end
