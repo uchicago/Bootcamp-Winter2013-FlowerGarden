@@ -47,7 +47,7 @@
     // Create an image to add to the field view
     UIImage *flower = [UIImage imageNamed:@"red"];
     
-    // Add an image view wit
+    // Add an image view with flower as image
     UIImageView *flowerImageView = [[UIImageView alloc] initWithImage:flower];
     
     // Place it at the touch point
@@ -55,6 +55,35 @@
     
     // Add our image view to the field view
     [field addSubview:flowerImageView];
+    
+    // Create a "drag" pan gesture
+    UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panPiece:)];
+    [panGesture setMaximumNumberOfTouches:2];
+    [panGesture setDelegate:self];
+    
+    // Enable view to receive touches and add the gesture
+    flowerImageView.userInteractionEnabled = YES;
+    [flowerImageView addGestureRecognizer:panGesture];
 }
 
+
+/*******************************************************************************
+ * @method      panPiece:
+ * @abstract    <# abstract #>
+ * @description shift the piece's center by the pan amount
+ *              reset the gesture recognizer's translation to {0, 0} after applying so the next
+ *              callback is a delta from the current position
+ *******************************************************************************/
+- (void)panPiece:(UIPanGestureRecognizer *)gestureRecognizer
+{
+    UIView *piece = [gestureRecognizer view];
+    [[piece superview] bringSubviewToFront:piece];
+    
+    if ([gestureRecognizer state] == UIGestureRecognizerStateBegan || [gestureRecognizer state] == UIGestureRecognizerStateChanged) {
+        CGPoint translation = [gestureRecognizer translationInView:[piece superview]];
+        
+        [piece setCenter:CGPointMake([piece center].x + translation.x, [piece center].y + translation.y)];
+        [gestureRecognizer setTranslation:CGPointZero inView:[piece superview]];
+    }
+}
 @end
