@@ -11,5 +11,6 @@
 @interface ViewController : UIViewController <UIGestureRecognizerDelegate>
 
 - (IBAction)tapToAddFlower:(UITapGestureRecognizer *)sender;
+- (IBAction)tapInfoButton:(UIButton *)sender;
 
 @end

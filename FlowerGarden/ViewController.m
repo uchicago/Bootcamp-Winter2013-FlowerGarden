@@ -91,8 +91,7 @@
     // Play sound when adding  
     [self playSoundEffect:@"Tink"];
 
-}
-
+} 
 
 /*******************************************************************************
  * @method      panPiece:
@@ -211,4 +210,25 @@
     [self.backgroundMusic prepareToPlay];
     [self.backgroundMusic play];
 }
+
+#pragma mark - Buttons
+
+/*******************************************************************************
+ * @method          tapInfoButton
+ * @abstract        Show an alert dialogue on tap
+ * @description
+ ******************************************************************************/
+- (IBAction)tapInfoButton:(UIButton *)sender
+{
+    UIActionSheet *msg = [[UIActionSheet alloc]
+                          initWithTitle:
+                          @"1. Tap the field to add ornaments.\n"
+                          "2. Move ornaments by dragging.\n"
+                          "3. Shake to start over.\n"
+                          delegate:nil
+                          cancelButtonTitle:nil  destructiveButtonTitle:nil
+                          otherButtonTitles:@"Okay", nil];
+    [msg showInView:self.view];
+}
+
 @end
