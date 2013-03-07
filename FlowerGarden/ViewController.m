@@ -26,4 +26,7 @@
     // Dispose of any resources that can be recreated.
 }
 
+- (IBAction)tapToAddFlower:(UITapGestureRecognizer *)sender {
+    NSLog(@">>>>> tapToAddFlower:");
+}
 @end

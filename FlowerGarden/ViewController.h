@@ -10,4 +10,6 @@
 
 @interface ViewController : UIViewController
 
+- (IBAction)tapToAddFlower:(UITapGestureRecognizer *)sender;
+
 @end
