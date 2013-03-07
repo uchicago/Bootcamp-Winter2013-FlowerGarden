@@ -8,9 +8,11 @@
 
 #import "ViewController.h"
 #import <AudioToolbox/AudioToolbox.h>
+#import <AVFoundation/AVFoundation.h>
 
 // Class Extension (Private) ///////////////////////////////////////////////////
 @interface ViewController ()
+@property (strong, nonatomic) AVAudioPlayer *backgroundMusic;
 - (void)animateSun;
 - (void)playSoundEffect:(NSString*)soundName; 
 @end
@@ -32,6 +34,7 @@
 - (void)viewDidAppear:(BOOL)animated
 {
     [self animateSun];
+    [self playBackgroundMusic];
 }
 
 
@@ -193,4 +196,19 @@
     AudioServicesPlaySystemSound(soundID);
 }
 
+/*******************************************************************************
+ * @method      playBackgroundMusic
+ * @abstract    <# abstract #>
+ * @description <# description #>
+ *******************************************************************************/
+- (void)playBackgroundMusic
+{
+    NSError *error;
+    NSString *backgroundMusicPath = [[NSBundle mainBundle] pathForResource:@"She loves you" ofType:@"mp3"];
+    NSURL *backgroundMusicURL = [NSURL fileURLWithPath:backgroundMusicPath];
+    
+    _backgroundMusic = [[AVAudioPlayer alloc] initWithContentsOfURL:backgroundMusicURL error:&error];
+    [self.backgroundMusic prepareToPlay];
+    [self.backgroundMusic play];
+}
 @end

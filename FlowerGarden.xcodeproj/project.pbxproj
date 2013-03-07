@@ -27,9 +27,9 @@
 		37EA3F4116E91FE600FA5D92 /* sun.png in Resources */ = {isa = PBXBuildFile; fileRef = 37EA3F4016E91FE600FA5D92 /* sun.png */; };
 		37EA3F4316E9233500FA5D92 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37EA3F4216E9233500FA5D92 /* AudioToolbox.framework */; };
 		37EA3F4516E9233F00FA5D92 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37EA3F4416E9233F00FA5D92 /* AVFoundation.framework */; };
-		37EA3F4916E923D700FA5D92 /* 01 Jingle Bells.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 37EA3F4616E923D700FA5D92 /* 01 Jingle Bells.m4a */; };
 		37EA3F4A16E923D700FA5D92 /* Cartoon Boing.caf in Resources */ = {isa = PBXBuildFile; fileRef = 37EA3F4716E923D700FA5D92 /* Cartoon Boing.caf */; };
 		37EA3F4B16E923D700FA5D92 /* Tink.caf in Resources */ = {isa = PBXBuildFile; fileRef = 37EA3F4816E923D700FA5D92 /* Tink.caf */; };
+		37EA3F4E16E925DB00FA5D92 /* She loves you.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 37EA3F4D16E925DB00FA5D92 /* She loves you.mp3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -58,9 +58,9 @@
 		37EA3F4016E91FE600FA5D92 /* sun.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = sun.png; sourceTree = "<group>"; };
 		37EA3F4216E9233500FA5D92 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		37EA3F4416E9233F00FA5D92 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
-		37EA3F4616E923D700FA5D92 /* 01 Jingle Bells.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = "01 Jingle Bells.m4a"; sourceTree = "<group>"; };
 		37EA3F4716E923D700FA5D92 /* Cartoon Boing.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Cartoon Boing.caf"; sourceTree = "<group>"; };
 		37EA3F4816E923D700FA5D92 /* Tink.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Tink.caf; sourceTree = "<group>"; };
+		37EA3F4D16E925DB00FA5D92 /* She loves you.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "She loves you.mp3"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -154,7 +154,7 @@
 		37EA3F4C16E923DC00FA5D92 /* Sounds */ = {
 			isa = PBXGroup;
 			children = (
-				37EA3F4616E923D700FA5D92 /* 01 Jingle Bells.m4a */,
+				37EA3F4D16E925DB00FA5D92 /* She loves you.mp3 */,
 				37EA3F4716E923D700FA5D92 /* Cartoon Boing.caf */,
 				37EA3F4816E923D700FA5D92 /* Tink.caf */,
 			);
@@ -224,9 +224,9 @@
 				37EA3F3716E9116D00FA5D92 /* Default-Landscape@2x.png in Resources */,
 				37EA3F3D16E9140D00FA5D92 /* vc.txt in Resources */,
 				37EA3F4116E91FE600FA5D92 /* sun.png in Resources */,
-				37EA3F4916E923D700FA5D92 /* 01 Jingle Bells.m4a in Resources */,
 				37EA3F4A16E923D700FA5D92 /* Cartoon Boing.caf in Resources */,
 				37EA3F4B16E923D700FA5D92 /* Tink.caf in Resources */,
+				37EA3F4E16E925DB00FA5D92 /* She loves you.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
