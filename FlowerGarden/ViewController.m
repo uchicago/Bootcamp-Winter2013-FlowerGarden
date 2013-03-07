@@ -14,7 +14,12 @@
 @interface ViewController ()
 @property (strong, nonatomic) AVAudioPlayer *backgroundMusic;
 - (void)animateSun;
-- (void)playSoundEffect:(NSString*)soundName; 
+- (void)playSoundEffect:(NSString*)soundName;
+
+- (void)addGestureRecognizersToFlower:(UIView *)piece;
+- (void)panPiece:(UIPanGestureRecognizer *)gestureRecognizer;
+- (void)rotatePiece:(UIRotationGestureRecognizer *)gestureRecognizer;
+- (void)scalePiece:(UIPinchGestureRecognizer *)gestureRecognizer;
 @end
 
 // Class ///////////////////////////////////////////////////////////////////////
@@ -77,22 +82,35 @@
     flowerImageView.center = touchPoint;
     
     // Add our image view to the field view
+    flowerImageView.userInteractionEnabled = YES;
     [field addSubview:flowerImageView];
     
-    // Create a "drag" pan gesture
-    UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panPiece:)];
-    [panGesture setMaximumNumberOfTouches:2];
-    [panGesture setDelegate:self];
-    
-    // Enable view to receive touches and add the gesture
-    flowerImageView.userInteractionEnabled = YES;
-    [flowerImageView addGestureRecognizer:panGesture];
+    [self addGestureRecognizersToFlower:flowerImageView];
     
     // Play sound when adding  
     [self playSoundEffect:@"Tink"];
 
-} 
+}
 
+/*******************************************************************************
+ * @method          addGestureToFlower: 
+ * @abstract        Add gestures to the added flower to detect rotation, translation, and scaling
+ * @description
+ ******************************************************************************/
+- (void)addGestureRecognizersToFlower:(UIView *)piece
+{
+    UIRotationGestureRecognizer *rotationGesture = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(rotatePiece:)];
+    [piece addGestureRecognizer:rotationGesture];
+    
+    UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(scalePiece:)];
+    [pinchGesture setDelegate:self];
+    [piece addGestureRecognizer:pinchGesture]; 
+    
+    UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panPiece:)];
+    [panGesture setMaximumNumberOfTouches:2];
+    [panGesture setDelegate:self];
+    [piece addGestureRecognizer:panGesture];
+}
 /*******************************************************************************
  * @method      panPiece:
  * @abstract    <# abstract #>
@@ -110,6 +128,35 @@
         
         [piece setCenter:CGPointMake([piece center].x + translation.x, [piece center].y + translation.y)];
         [gestureRecognizer setTranslation:CGPointZero inView:[piece superview]];
+    }
+}
+
+/*******************************************************************************
+ * @method      rotatePiece:
+ * @abstract    <# abstract #>
+ * @description rotate the piece by the current rotation
+ *              reset the gesture recognizer's rotation to 0 after applying so
+ *              the next callback is a delta from the current rotation
+ *******************************************************************************/
+- (void)rotatePiece:(UIRotationGestureRecognizer *)gestureRecognizer
+{
+    if ([gestureRecognizer state] == UIGestureRecognizerStateBegan || [gestureRecognizer state] == UIGestureRecognizerStateChanged) {
+        [gestureRecognizer view].transform = CGAffineTransformRotate([[gestureRecognizer view] transform], [gestureRecognizer rotation]);
+        [gestureRecognizer setRotation:0];
+    }
+}
+
+/*******************************************************************************
+ * @method      scalePiece
+ * @abstract
+ * @description Scale the piece by the current scale; reset the gesture recognizer's
+ *              rotation to 0 after applying so the next callback is a delta from the current scale
+ *******************************************************************************/
+- (void)scalePiece:(UIPinchGestureRecognizer *)gestureRecognizer
+{
+    if ([gestureRecognizer state] == UIGestureRecognizerStateBegan || [gestureRecognizer state] == UIGestureRecognizerStateChanged) {
+        [gestureRecognizer view].transform = CGAffineTransformScale([[gestureRecognizer view] transform], [gestureRecognizer scale], [gestureRecognizer scale]);
+        [gestureRecognizer setScale:1];
     }
 }
 
