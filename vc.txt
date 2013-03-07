@@ -1,0 +1,356 @@
+//
+//  ViewController.h
+//  TrimTheTree
+//
+//  Created by T. Andrew Binkowski on 11/10/12.
+//  Copyright (c) 2012 T. Andrew Binkowski. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface ViewController : UIViewController<UIGestureRecognizerDelegate,
+                                                UIActionSheetDelegate,
+                                                UIImagePickerControllerDelegate,
+                                                UINavigationControllerDelegate>
+- (IBAction)tapToAddOrnament:(UITapGestureRecognizer *)sender;
+- (IBAction)tapInfoButton:(UIButton *)sender;
+- (IBAction)showImagePickerForCustomOrnament:(UIButton *)sender;
+- (IBAction)switchedOn:(UISwitch *)sender;
+
+@end
+
+//
+//  ViewController.m
+//  TrimTheTree
+//
+//  Created by T. Andrew Binkowski on 11/10/12.
+//  Copyright (c) 2012 T. Andrew Binkowski. All rights reserved.
+//
+
+#import "ViewController.h"
+#import <AudioToolbox/AudioToolbox.h>
+#import <AVFoundation/AVFoundation.h>
+
+// Class Extension (Private) ///////////////////////////////////////////////////
+@interface ViewController ()
+@property (strong, nonatomic) NSArray *ornamentImages;
+@property (strong, nonatomic) AVAudioPlayer *backgroundMusic;
+@property (copy, nonatomic) UIImage *currentOrnament;
+
+// Class extension methods (note they do not have to be explicitly defined, compiler will identify them)
+- (void)addGestureRecognizersToOrnament:(UIView *)piece;
+- (void)panPiece:(UIPanGestureRecognizer *)gestureRecognizer;
+- (void)rotatePiece:(UIRotationGestureRecognizer *)gestureRecognizer;
+- (void)scalePiece:(UIPinchGestureRecognizer *)gestureRecognizer;
+- (void)playSoundEffect:(NSString*)soundName;
+@end
+
+// Class ///////////////////////////////////////////////////////////////////////
+@implementation ViewController
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+	// Do any additional setup after loading the view, typically from a nib.
+    _ornamentImages = @[@"ornament_red", @"ornament_blue", @"ornament_purple"];
+    
+    [self playBackgroundMusic];
+    [self animateStarToTopOfTree];
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [self resignFirstResponder];
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark Gesture Handling
+
+/*******************************************************************************
+ * @method          tapToAddOrnament
+ * @abstract        Action for single tap gesture recognizer
+ * @description     Add an UIImage to the parentview
+ ******************************************************************************/
+- (IBAction)tapToAddOrnament:(UITapGestureRecognizer *)sender
+{ 
+    NSLog(@">>>> Single Tap from %@",sender);
+    UIView *tree = sender.view;
+    
+    CGPoint locationInView = [sender locationInView:[tree superview]];
+    NSLog(@"\ntap location: x:%5.2f y:%5.2f",locationInView.x,locationInView.y);
+    
+    // Select a random image from our array
+    int randomIndex = arc4random()%3;
+    
+    UIImage *image;
+    // If there is an currentOrnament, we will use it as the image; if not, use a random star
+    if (self.currentOrnament == nil) {
+        image = [UIImage imageNamed:[self.ornamentImages objectAtIndex:randomIndex]];
+    } else {
+        image = self.currentOrnament;
+        // Nil this out so that the next ornament will be a star
+        self.currentOrnament = nil;
+    }
+    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
+    
+    // Scale the image down, so it is not pixelated when we scale it up
+    imageView.transform = CGAffineTransformScale(imageView.transform, 0.25, 0.25);
+    imageView.center = locationInView;
+    imageView.userInteractionEnabled = YES;
+    [tree addSubview:imageView];
+    
+    [self addGestureRecognizersToOrnament:imageView];
+    
+    // Play sound when adding ornament
+    [self playSoundEffect:@"Tink"];
+}
+
+/*******************************************************************************
+ * @method          addGestureToOrnament:
+ * @abstract        Add gestures to the added ornament to detect rotation, translation, and scaling
+ * @description      
+ ******************************************************************************/
+- (void)addGestureRecognizersToOrnament:(UIView *)piece
+{
+    UIRotationGestureRecognizer *rotationGesture = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(rotatePiece:)];
+    [piece addGestureRecognizer:rotationGesture];
+    
+    UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(scalePiece:)];
+    [pinchGesture setDelegate:self];
+    [piece addGestureRecognizer:pinchGesture];
+    
+    UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panPiece:)];
+    [panGesture setMaximumNumberOfTouches:2];
+    [panGesture setDelegate:self];
+    [piece addGestureRecognizer:panGesture];
+}
+
+/*******************************************************************************
+ * @method      panPiece:
+ * @abstract    <# abstract #>
+ * @description shift the piece's center by the pan amount
+ *              reset the gesture recognizer's translation to {0, 0} after applying so the next
+ *              callback is a delta from the current position
+ *******************************************************************************/
+- (void)panPiece:(UIPanGestureRecognizer *)gestureRecognizer
+{
+    UIView *piece = [gestureRecognizer view];
+    [[piece superview] bringSubviewToFront:piece];
+    
+    if ([gestureRecognizer state] == UIGestureRecognizerStateBegan || [gestureRecognizer state] == UIGestureRecognizerStateChanged) {
+        CGPoint translation = [gestureRecognizer translationInView:[piece superview]];
+        
+        [piece setCenter:CGPointMake([piece center].x + translation.x, [piece center].y + translation.y)];
+        [gestureRecognizer setTranslation:CGPointZero inView:[piece superview]];
+    }
+}
+
+/*******************************************************************************
+ * @method      rotatePiece:
+ * @abstract    <# abstract #>
+ * @description rotate the piece by the current rotation
+ *              reset the gesture recognizer's rotation to 0 after applying so
+ *              the next callback is a delta from the current rotation
+ *******************************************************************************/
+- (void)rotatePiece:(UIRotationGestureRecognizer *)gestureRecognizer
+{
+    if ([gestureRecognizer state] == UIGestureRecognizerStateBegan || [gestureRecognizer state] == UIGestureRecognizerStateChanged) {
+        [gestureRecognizer view].transform = CGAffineTransformRotate([[gestureRecognizer view] transform], [gestureRecognizer rotation]);
+        [gestureRecognizer setRotation:0];
+    }
+}
+
+/*******************************************************************************
+ * @method      scalePiece
+ * @abstract
+ * @description Scale the piece by the current scale; reset the gesture recognizer's
+ *              rotation to 0 after applying so the next callback is a delta from the current scale
+ *******************************************************************************/
+- (void)scalePiece:(UIPinchGestureRecognizer *)gestureRecognizer
+{
+    if ([gestureRecognizer state] == UIGestureRecognizerStateBegan || [gestureRecognizer state] == UIGestureRecognizerStateChanged) {
+        [gestureRecognizer view].transform = CGAffineTransformScale([[gestureRecognizer view] transform], [gestureRecognizer scale], [gestureRecognizer scale]);
+        [gestureRecognizer setScale:1];
+    }
+}
+
+#pragma mark - Shake Detection
+/*******************************************************************************
+ * @method      canBecomeFirstResponder
+ * @abstract    To receive motion events, the responder object that is to handle them must be the first responder.
+ * @description
+ *******************************************************************************/
+- (BOOL)canBecomeFirstResponder
+{
+    return YES;
+}
+
+/*******************************************************************************
+ * @method          motionEnded:withEvent
+ * @abstract
+ * @description     
+ ******************************************************************************/
+- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event {
+    if (motion == UIEventTypeMotion && event.type == UIEventSubtypeMotionShake) {
+        NSLog(@"%@ motionEnded", [NSDate date]);
+        
+        // Get the tree view (tag==100)
+        UIView *tree = [self.view viewWithTag:100];
+        // Remove all subviews (the ornaments) 
+        for (UIView *subview in [tree subviews]) {
+            [subview removeFromSuperview];
+        }
+        
+        // Play a sound effect
+        [self playSoundEffect:@"Cartoon Boing"];
+    }
+ }
+- (void)motionBegan:(UIEventSubtype)motion withEvent:(UIEvent *)event {}
+- (void)motionCancelled:(UIEventSubtype)motion withEvent:(UIEvent *)event {}
+
+#pragma mark - Sound Effect
+/*******************************************************************************
+ * @method          playSoundEffect
+ * @abstract        Play a short sound when an ornament is added
+ * @description     <# Description #>
+ ******************************************************************************/
+- (void)playSoundEffect:(NSString*)soundName
+{
+    NSLog(@">>> Play sound named: %@",soundName);
+    NSString *soundPath = [[NSBundle mainBundle] pathForResource:soundName ofType:@"caf"];
+    NSURL *soundURL = [NSURL fileURLWithPath:soundPath];
+    SystemSoundID soundID;
+    AudioServicesCreateSystemSoundID((__bridge CFURLRef)soundURL, &soundID);
+    AudioServicesPlaySystemSound(soundID);
+}
+
+/*******************************************************************************
+ * @method      playBackgroundMusic
+ * @abstract    <# abstract #>
+ * @description <# description #>
+ *******************************************************************************/
+- (void)playBackgroundMusic
+{
+    NSError *error;
+    NSString *backgroundMusicPath = [[NSBundle mainBundle] pathForResource:@"01 Jingle Bells" ofType:@"m4a"];
+    NSURL *backgroundMusicURL = [NSURL fileURLWithPath:backgroundMusicPath];
+    
+    _backgroundMusic = [[AVAudioPlayer alloc] initWithContentsOfURL:backgroundMusicURL error:&error];
+    [self.backgroundMusic prepareToPlay];
+    [self.backgroundMusic play];
+}
+
+#pragma mark - Animation Effects
+/*******************************************************************************
+ * @method          animateStarToTopOfTree
+ * @abstract        Animate the star offscreen to the top of the tree
+ * @description     Add to the tree image view
+ ******************************************************************************/
+- (void)animateStarToTopOfTree
+{
+    CGRect offscreen = CGRectMake(0, 500, 50, 50);
+    
+    UIImageView *star = [[UIImageView alloc] initWithFrame:offscreen];
+    star.image = [UIImage imageNamed:@"star"];
+    UIView *tree = [self.view viewWithTag:100];
+    [tree addSubview:star];
+    
+    [UIView animateWithDuration:2.0 delay:0.25 options:UIViewAnimationOptionCurveEaseInOut
+                     animations:^{
+                         star.center = CGPointMake(165, 25);
+                     }
+                     completion:^(BOOL  completed) {
+                         NSLog(@">>>> Star is now at top of tree");
+                     }
+     ];
+}
+
+#pragma mark - Buttons
+
+/*******************************************************************************
+ * @method          tapInfoButton
+ * @abstract        Show an alert dialogue on tap
+ * @description
+ ******************************************************************************/
+- (IBAction)tapInfoButton:(UIButton *)sender {
+
+    UIActionSheet *msg = [[UIActionSheet alloc]
+                          initWithTitle:
+                          @"1. Tap the tree to add ornaments.\n"
+                          "2. Move or resize the ornaments by dragging and pinching.\n"
+                          "3. Shake to start over.\n"
+                          delegate:self
+                          cancelButtonTitle:nil  destructiveButtonTitle:nil
+                          otherButtonTitles:@"Okay", nil];
+    [msg showInView:self.view];
+}
+
+#pragma mark - Alerts View Delegate
+/*******************************************************************************
+ * @method          <# Method Name #>
+ * @abstract        <# Abstract #>
+ * @description     <# Description #>
+ ******************************************************************************/
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    NSLog(@">>>> InfoButton button clicked at index %d", buttonIndex);
+}
+
+#pragma mark - Image Picker for Custom Ornament
+
+/*******************************************************************************
+ * @method      showImagePickerForCustomOrnament
+ * @abstract    <# abstract #>
+ * @description <# description #>
+ *******************************************************************************/
+- (IBAction)showImagePickerForCustomOrnament:(UIButton *)sender
+{
+    UIImagePickerController *imagePicker = [[UIImagePickerController alloc] init];
+    
+    // If our device has a camera, we want to take a picture, otherwise, we just pick from photo library
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+        [imagePicker setSourceType:UIImagePickerControllerSourceTypeCamera];
+    } else {
+        [imagePicker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
+    }
+    
+    // Tell the UIImagePickerController to send messages to this view controller
+    imagePicker.delegate = self;
+    
+    // Show image picker on the screen
+    [self presentViewController:imagePicker animated:YES completion:^{
+        NSLog(@">>>> Image picker was presented");}
+     ];
+}
+
+- (IBAction)switchedOn:(UISwitch *)sender {
+    NSLog(@"Sender %@",sender);
+}
+
+/*******************************************************************************
+ * @method      imagePickerController:
+ * @abstract    Show the system photo picker
+ * @description  
+ *******************************************************************************/
+- (void)imagePickerController:(UIImagePickerController *)picker
+    didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    NSLog(@">>>> Image selected: %@",info);
+    
+    // Get picked image from info dictionary
+    UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
+
+    // Set our currentImage property to the selected image
+    self.currentOrnament = image;
+    
+    // Take image picker off the screen
+    [[picker presentingViewController] dismissViewControllerAnimated:YES completion:^{
+        NSLog(@">>>> Image picker was dismissed");
+    }];
+}
+@end
