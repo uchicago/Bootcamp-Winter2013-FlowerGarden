@@ -12,7 +12,9 @@
 
 // Class Extension (Private) ///////////////////////////////////////////////////
 @interface ViewController ()
+
 @property (strong, nonatomic) AVAudioPlayer *backgroundMusic;
+
 - (void)animateSun;
 - (void)playSoundEffect:(NSString*)soundName;
 
@@ -25,6 +27,11 @@
 // Class ///////////////////////////////////////////////////////////////////////
 @implementation ViewController
 
+/*******************************************************************************
+ * @method          viewDidLoad
+ * @abstract
+ * @description      
+ ******************************************************************************/
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -111,10 +118,11 @@
     [panGesture setDelegate:self];
     [piece addGestureRecognizer:panGesture];
 }
+
 /*******************************************************************************
  * @method      panPiece:
- * @abstract    <# abstract #>
- * @description shift the piece's center by the pan amount
+ * @abstract
+ * @description Shift the piece's center by the pan amount
  *              reset the gesture recognizer's translation to {0, 0} after applying so the next
  *              callback is a delta from the current position
  *******************************************************************************/
@@ -133,8 +141,8 @@
 
 /*******************************************************************************
  * @method      rotatePiece:
- * @abstract    <# abstract #>
- * @description rotate the piece by the current rotation
+ * @abstract    
+ * @description Rotate the piece by the current rotation
  *              reset the gesture recognizer's rotation to 0 after applying so
  *              the next callback is a delta from the current rotation
  *******************************************************************************/
@@ -201,8 +209,8 @@
 #pragma mark - Animation Effects
 /*******************************************************************************
  * @method          animateSun
- * @abstract        Animate the star offscreen to the top of the tree
- * @description     Add to the tree image view
+ * @abstract        Animate the sun onto the screen
+ * @description
  ******************************************************************************/
 - (void)animateSun
 {
@@ -244,8 +252,8 @@
 
 /*******************************************************************************
  * @method      playBackgroundMusic
- * @abstract    <# abstract #>
- * @description <# description #>
+ * @abstract    Play music using AVAudioPlayer
+ * @description  
  *******************************************************************************/
 - (void)playBackgroundMusic
 {
